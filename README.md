@@ -1,0 +1,2 @@
+# garimpo-de-tudo
+loja
