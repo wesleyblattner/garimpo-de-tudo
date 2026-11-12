@@ -1,75 +1,185 @@
 
 
-
 <script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
 const SUPABASE_URL = 'https://qdssmmkffgazadmzeixq.supabase.co';
-
 const SUPABASE_KEY = 'sb_publishable_B9gVhNPqbg9Qt-C1jgs-Ow_ybMJCfYE';
+
+// TROQUE PELO SEU WHATSAPP: código do Brasil + DDD + número
+const WHATSAPP_NUMERO = '5519971032004';
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let produtos = [];
 let carrinho = [];
-let categoriaAtual = "Todos";
+let categoriaAtual = 'Todos';
 
 function dinheiro(valor) {
-  return Number(valor).toLocaleString("pt-BR", {
-    style: "currency",
-    currency: "BRL"
+  return Number(valor).toLocaleString('pt-BR', {
+    style: 'currency',
+    currency: 'BRL'
   });
 }
 
-function mostrarProdutos() {
-  const lista = document.getElementById("listaProdutos");
-  lista.innerHTML = "";
+// Estilo do carrinho
+const estiloCarrinho = document.createElement('style');
+estiloCarrinho.textContent = `
+  #carrinhoLoja {
+    background: #f5f8f1;
+    border: 2px solid #c5a34a;
+    border-radius: 14px;
+    padding: 20px;
+    margin: 30px auto;
+    max-width: 950px;
+    color: #174d32;
+  }
+  #carrinhoLoja h2 {
+    color: #174d32;
+    margin-top: 0;
+  }
+  .item-carrinho {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 0;
+    border-bottom: 1px solid #d9dfd1;
+    flex-wrap: wrap;
+  }
+  .item-carrinho img {
+    width: 65px;
+    height: 65px;
+    object-fit: contain;
+    background: white;
+    border-radius: 8px;
+  }
+  .info-carrinho {
+    flex: 1;
+    min-width: 130px;
+  }
+  .controle-quantidade {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .controle-quantidade button,
+  .remover-item {
+    cursor: pointer;
+    border: 0;
+    border-radius: 6px;
+    padding: 7px 11px;
+  }
+  .controle-quantidade button {
+    background: #174d32;
+    color: white;
+  }
+  .remover-item {
+    background: #a83232;
+    color: white;
+  }
+  #finalizarWhatsApp {
+    background: #174d32;
+    color: white;
+    border: 2px solid #c5a34a;
+    border-radius: 8px;
+    padding: 13px 20px;
+    font-weight: bold;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 15px;
+  }
+  #finalizarWhatsApp:disabled {
+    opacity: .5;
+    cursor: not-allowed;
+  }
+  .total-carrinho {
+    font-size: 21px;
+    font-weight: bold;
+    margin-top: 18px;
+  }
+`;
+document.head.appendChild(estiloCarrinho);
 
-  const busca = document.getElementById("pesquisa").value.toLowerCase();
+// Cria a área do carrinho automaticamente
+const carrinhoElemento = document.createElement('section');
+carrinhoElemento.id = 'carrinhoLoja';
+carrinhoElemento.innerHTML = `
+  <h2>🛒 Meu carrinho</h2>
+  <div id="itensCarrinho"></div>
+  <div id="totalCarrinho" class="total-carrinho">Total: R$ 0,00</div>
+  <button id="finalizarWhatsApp" type="button">
+    Finalizar pedido pelo WhatsApp
+  </button>
+`;
+
+const secaoProdutos = document.getElementById('produtos');
+const listaProdutos = document.getElementById('listaProdutos');
+
+if (secaoProdutos) {
+  secaoProdutos.insertAdjacentElement('afterend', carrinhoElemento);
+} else if (listaProdutos) {
+  listaProdutos.insertAdjacentElement('afterend', carrinhoElemento);
+} else {
+  document.body.appendChild(carrinhoElemento);
+}
+
+function mostrarProdutos() {
+  const lista = document.getElementById('listaProdutos');
+
+  if (!lista) {
+    console.error('Não encontrei o elemento listaProdutos no HTML.');
+    return;
+  }
+
+  lista.innerHTML = '';
+
+  const campoBusca = document.getElementById('pesquisa');
+  const busca = campoBusca ? campoBusca.value.toLowerCase() : '';
 
   const filtrados = produtos.filter(produto => {
-    const combinaNome = produto.nome.toLowerCase().includes(busca);
+    const nome = (produto.nome || '').toLowerCase();
+    const combinaNome = nome.includes(busca);
     const combinaCategoria =
-      categoriaAtual === "Todos" ||
+      categoriaAtual === 'Todos' ||
       produto.categoria === categoriaAtual;
 
     return combinaNome && combinaCategoria;
   });
 
   if (filtrados.length === 0) {
-    lista.textContent = "Nenhum produto encontrado.";
+    lista.textContent = 'Nenhum produto encontrado.';
     return;
   }
 
   filtrados.forEach(produto => {
-    const card = document.createElement("div");
-    card.className = "produto";
+    const card = document.createElement('div');
+    card.className = 'produto';
 
-    const imagem = document.createElement("div");
-    imagem.className = "foto";
+    const imagem = document.createElement('div');
+    imagem.className = 'foto';
 
     if (produto.imagem_url) {
-      const img = document.createElement("img");
+      const img = document.createElement('img');
       img.src = produto.imagem_url;
       img.alt = produto.nome;
-      img.style.width = "100%";
-      img.style.height = "120px";
-      img.style.objectFit = "contain";
+      img.style.width = '100%';
+      img.style.height = '120px';
+      img.style.objectFit = 'contain';
       imagem.appendChild(img);
     } else {
-      imagem.textContent = "📦";
+      imagem.textContent = '📦';
     }
 
-    const nome = document.createElement("h3");
+    const nome = document.createElement('h3');
     nome.textContent = produto.nome;
 
-    const preco = document.createElement("p");
-    preco.className = "preco";
+    const preco = document.createElement('p');
+    preco.className = 'preco';
     preco.textContent = dinheiro(produto.preco);
 
-    const botao = document.createElement("button");
-    botao.textContent = "Adicionar ao carrinho";
-    botao.addEventListener("click", () => adicionarCarrinho(produto));
+    const botao = document.createElement('button');
+    botao.textContent = 'Adicionar ao carrinho';
+    botao.addEventListener('click', () => adicionarCarrinho(produto));
 
     card.append(imagem, nome, preco, botao);
     lista.appendChild(card);
@@ -77,24 +187,189 @@ function mostrarProdutos() {
 }
 
 async function carregarProdutos() {
-  const lista = document.getElementById("listaProdutos");
-  lista.textContent = "Carregando produtos...";
+  const lista = document.getElementById('listaProdutos');
+
+  if (!lista) {
+    console.error('Não encontrei listaProdutos no HTML.');
+    return;
+  }
+
+  lista.textContent = 'Carregando produtos...';
 
   const { data, error } = await supabase
-    .from("produtos")
-    .select("*")
-    .eq("ativo", true)
-    .order("criado_em", { ascending: false });
+    .from('produtos')
+    .select('*')
+    .eq('ativo', true)
+    .order('criado_em', { ascending: false });
 
   if (error) {
-    console.error("Erro ao buscar produtos:", error);
-    lista.textContent = "Não foi possível carregar os produtos.";
+    console.error('Erro ao buscar produtos:', error);
+    lista.textContent = 'Não foi possível carregar os produtos.';
     return;
   }
 
   produtos = data || [];
   mostrarProdutos();
 }
+
+function adicionarCarrinho(produto) {
+  const existente = carrinho.find(item =>
+    String(item.produto.id) === String(produto.id)
+  );
+
+  if (existente) {
+    existente.quantidade++;
+  } else {
+    carrinho.push({
+      produto: produto,
+      quantidade: 1
+    });
+  }
+
+  mostrarCarrinho();
+}
+
+function alterarQuantidade(id, mudanca) {
+  const item = carrinho.find(item =>
+    String(item.produto.id) === String(id)
+  );
+
+  if (!item) return;
+
+  item.quantidade += mudanca;
+
+  if (item.quantidade <= 0) {
+    removerProduto(id);
+    return;
+  }
+
+  mostrarCarrinho();
+}
+
+function removerProduto(id) {
+  carrinho = carrinho.filter(item =>
+    String(item.produto.id) !== String(id)
+  );
+
+  mostrarCarrinho();
+}
+
+function mostrarCarrinho() {
+  const lista = document.getElementById('itensCarrinho');
+  const totalElemento = document.getElementById('totalCarrinho');
+  const botaoFinalizar = document.getElementById('finalizarWhatsApp');
+
+  lista.innerHTML = '';
+
+  let total = 0;
+  let quantidadeTotal = 0;
+
+  if (carrinho.length === 0) {
+    lista.textContent = 'Seu carrinho está vazio.';
+  }
+
+  carrinho.forEach(item => {
+    const produto = item.produto;
+    const subtotal = Number(produto.preco) * item.quantidade;
+
+    total += subtotal;
+    quantidadeTotal += item.quantidade;
+
+    const linha = document.createElement('div');
+    linha.className = 'item-carrinho';
+
+    if (produto.imagem_url) {
+      const imagem = document.createElement('img');
+      imagem.src = produto.imagem_url;
+      imagem.alt = produto.nome;
+      linha.appendChild(imagem);
+    }
+
+    const info = document.createElement('div');
+    info.className = 'info-carrinho';
+
+    const nome = document.createElement('strong');
+    nome.textContent = produto.nome;
+
+    const preco = document.createElement('div');
+    preco.textContent = dinheiro(subtotal);
+
+    info.append(nome, preco);
+
+    const controles = document.createElement('div');
+    controles.className = 'controle-quantidade';
+
+    const menos = document.createElement('button');
+    menos.textContent = '−';
+    menos.addEventListener('click', () =>
+      alterarQuantidade(produto.id, -1)
+    );
+
+    const numero = document.createElement('span');
+    numero.textContent = item.quantidade;
+
+    const mais = document.createElement('button');
+    mais.textContent = '+';
+    mais.addEventListener('click', () =>
+      alterarQuantidade(produto.id, 1)
+    );
+
+    controles.append(menos, numero, mais);
+
+    const remover = document.createElement('button');
+    remover.className = 'remover-item';
+    remover.textContent = 'Remover';
+    remover.addEventListener('click', () =>
+      removerProduto(produto.id)
+    );
+
+    linha.append(info, controles, remover);
+    lista.appendChild(linha);
+  });
+
+  totalElemento.textContent =
+    'Total (' + quantidadeTotal + ' itens): ' + dinheiro(total);
+
+  botaoFinalizar.disabled = carrinho.length === 0;
+}
+
+function finalizarWhatsApp() {
+  if (carrinho.length === 0) {
+    alert('Seu carrinho está vazio!');
+    return;
+  }
+
+  if (WHATSAPP_NUMERO === '5511999999999') {
+    alert('Primeiro coloque seu número de WhatsApp no código da loja.');
+    return;
+  }
+
+  let mensagem = 'Olá! Quero fazer este pedido na Garimpo de Tudo:\n\n';
+  let total = 0;
+
+  carrinho.forEach(item => {
+    const subtotal = Number(item.produto.preco) * item.quantidade;
+
+    mensagem +=
+      item.produto.nome +
+      ' | Quantidade: ' + item.quantidade +
+      ' | Subtotal: ' + dinheiro(subtotal) + '\n';
+
+    total += subtotal;
+  });
+
+  mensagem += '\nTOTAL DO PEDIDO: ' + dinheiro(total);
+  mensagem += '\n\nAguardo confirmação. Obrigado!';
+
+  const link =
+    'https://wa.me/' + WHATSAPP_NUMERO +
+    '?text=' + encodeURIComponent(mensagem);
+
+  window.open(link, '_blank');
+}
+
+document.getElementById('finalizarWhatsApp')
+  .addEventListener('click', finalizarWhatsApp);
 
 function filtrar() {
   mostrarProdutos();
@@ -103,40 +378,26 @@ function filtrar() {
 function filtrarCategoria(categoria) {
   categoriaAtual = categoria;
   mostrarProdutos();
-  document.getElementById("produtos").scrollIntoView({
-    behavior: "smooth"
-  });
-}
 
-function adicionarCarrinho(produto) {
-  carrinho.push(produto);
-  document.getElementById("quantidade").textContent = carrinho.length;
-  alert("Produto adicionado ao carrinho!");
+  const secao = document.getElementById('produtos');
+  if (secao) {
+    secao.scrollIntoView({ behavior: 'smooth' });
+  }
 }
 
 function verCarrinho() {
-  if (carrinho.length === 0) {
-    alert("Seu carrinho está vazio!");
-    return;
-  }
-
-  let total = 0;
-  let mensagem = "SEU CARRINHO:\n\n";
-
-  carrinho.forEach(produto => {
-    mensagem += produto.nome + " - " + dinheiro(produto.preco) + "\n";
-    total += Number(produto.preco);
-  });
-
-  mensagem += "\nTOTAL: " + dinheiro(total);
-  alert(mensagem);
+  carrinhoElemento.scrollIntoView({ behavior: 'smooth' });
 }
 
-// Mantém os botões e campos do HTML funcionando.
 window.filtrar = filtrar;
 window.filtrarCategoria = filtrarCategoria;
 window.verCarrinho = verCarrinho;
 
+const campoBusca = document.getElementById('pesquisa');
+if (campoBusca) {
+  campoBusca.addEventListener('input', filtrar);
+}
+
+mostrarCarrinho();
 carregarProdutos();
 </script>
-
