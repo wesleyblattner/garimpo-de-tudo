@@ -1,0 +1,522 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Garimpo de Tudo</title>
+
+<style>
+:root {
+  --verde: #176b3a;
+  --verde-escuro: #123b27;
+  --dourado: #c49a32;
+  --fundo: #f6f8f3;
+  --branco: #ffffff;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: var(--fundo);
+  color: #202820;
+}
+
+.topo {
+  background: var(--verde-escuro);
+  color: white;
+  text-align: center;
+  padding: 12px;
+  font-size: 13px;
+}
+
+header {
+  background: white;
+  padding: 20px;
+  box-shadow: 0 2px 10px #0001;
+}
+
+.cabecalho {
+  max-width: 1200px;
+  margin: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.logo {
+  font-size: 27px;
+  font-weight: bold;
+  color: var(--verde);
+}
+
+.logo span {
+  color: var(--dourado);
+}
+
+.busca {
+  display: flex;
+  flex: 1;
+  min-width: 220px;
+}
+
+.busca input {
+  flex: 1;
+  padding: 13px;
+  border: 1px solid #ddd;
+  border-radius: 8px 0 0 8px;
+}
+
+.busca button {
+  background: var(--verde);
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  cursor: pointer;
+}
+
+.carrinho {
+  background: var(--dourado);
+  color: white;
+  border: none;
+  padding: 13px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+nav {
+  background: var(--verde);
+  padding: 14px;
+  text-align: center;
+}
+
+nav a {
+  color: white;
+  text-decoration: none;
+  margin: 0 15px;
+  font-weight: bold;
+}
+
+.banner {
+  max-width: 1200px;
+  margin: 30px auto;
+  padding: 65px 30px;
+  border-radius: 18px;
+  background: linear-gradient(
+    120deg,
+    #123b27,
+    #176b3a,
+    #c49a32
+  );
+  color: white;
+  text-align: center;
+}
+
+.banner h1 {
+  font-size: 42px;
+  margin-bottom: 15px;
+}
+
+.banner p {
+  font-size: 18px;
+}
+
+.banner button {
+  background: var(--dourado);
+  color: white;
+  border: none;
+  padding: 15px 25px;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.container {
+  max-width: 1200px;
+  margin: auto;
+  padding: 20px;
+}
+
+h2 {
+  color: var(--verde);
+}
+
+.categorias {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+}
+
+.categoria {
+  background: white;
+  padding: 25px;
+  text-align: center;
+  border-radius: 12px;
+  border: 1px solid #e3e9df;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.categoria:hover {
+  border-color: var(--dourado);
+}
+
+.produtos {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+}
+
+.produto {
+  background: white;
+  border-radius: 12px;
+  padding: 15px;
+  text-align: center;
+  box-shadow: 0 2px 10px #0001;
+}
+
+.produto .foto {
+  background: #edf3e9;
+  border-radius: 10px;
+  padding: 30px;
+  font-size: 55px;
+}
+
+.produto h3 {
+  font-size: 16px;
+}
+
+.preco {
+  color: var(--verde);
+  font-size: 21px;
+  font-weight: bold;
+}
+
+.produto button {
+  width: 100%;
+  background: var(--verde);
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+.produto button:hover {
+  background: var(--dourado);
+}
+
+footer {
+  background: var(--verde-escuro);
+  color: white;
+  text-align: center;
+  padding: 35px;
+  margin-top: 50px;
+}
+
+@media(max-width: 750px) {
+  .produtos {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .categorias {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .banner h1 {
+    font-size: 30px;
+  }
+
+  nav a {
+    display: inline-block;
+    margin: 6px;
+  }
+}
+
+@media(max-width: 420px) {
+  .produtos {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="topo">
+  ✨ BEM-VINDO À GARIMPO DE TUDO!
+  GRANDES ACHADOS E ÓTIMOS PREÇOS!
+</div>
+
+<header>
+  <div class="cabecalho">
+
+    <div class="logo">
+      Garimpo <span>de Tudo</span>
+    </div>
+
+    <div class="busca">
+      <input
+        type="text"
+        id="pesquisa"
+        placeholder="O que você procura?"
+        oninput="filtrar()"
+      >
+      <button onclick="filtrar()">Buscar</button>
+    </div>
+
+    <button class="carrinho" onclick="verCarrinho()">
+      🛒 Carrinho (<span id="quantidade">0</span>)
+    </button>
+
+  </div>
+</header>
+
+<nav>
+  <a href="#">Início</a>
+  <a href="#categorias">Categorias</a>
+  <a href="#produtos">Produtos</a>
+  <a href="#contato">Contato</a>
+</nav>
+
+<section class="banner">
+
+  <h1>Garimpe. Encontre. Economize.</h1>
+
+  <p>
+    Tudo o que você procura em um só lugar!
+    Os melhores achados estão aqui.
+  </p>
+
+  <button onclick="document.getElementById('produtos').scrollIntoView()">
+    COMPRAR AGORA
+  </button>
+
+</section>
+
+<main class="container">
+
+  <h2 id="categorias">Nossas Categorias</h2>
+
+  <section class="categorias">
+
+    <div class="categoria" onclick="filtrarCategoria('Casa')">
+      🏡 Casa
+    </div>
+
+    <div class="categoria" onclick="filtrarCategoria('Eletrônicos')">
+      🎧 Eletrônicos
+    </div>
+
+    <div class="categoria" onclick="filtrarCategoria('Moda')">
+      👟 Moda
+    </div>
+
+    <div class="categoria" onclick="filtrarCategoria('Beleza')">
+      💄 Beleza
+    </div>
+
+    <div class="categoria" onclick="filtrarCategoria('Acessórios')">
+      🎒 Acessórios
+    </div>
+
+    <div class="categoria" onclick="filtrarCategoria('Todos')">
+      ✨ Todos os produtos
+    </div>
+
+  </section>
+
+  <h2 id="produtos">Produtos em Destaque</h2>
+
+  <section class="produtos" id="listaProdutos"></section>
+
+</main>
+
+<footer id="contato">
+  <h2 style="color:#c49a32">Garimpo de Tudo</h2>
+
+  <p>
+    Sua loja de variedades, ofertas e grandes descobertas!
+  </p>
+
+  <p>© 2026 Garimpo de Tudo</p>
+</footer>
+
+<script>
+
+const produtos = [
+  {
+    nome: "Luminária Decorativa",
+    preco: 59.90,
+    emoji: "💡",
+    categoria: "Casa"
+  },
+  {
+    nome: "Fone Bluetooth",
+    preco: 79.90,
+    emoji: "🎧",
+    categoria: "Eletrônicos"
+  },
+  {
+    nome: "Tênis Casual",
+    preco: 99.90,
+    emoji: "👟",
+    categoria: "Moda"
+  },
+  {
+    nome: "Kit Beleza",
+    preco: 39.90,
+    emoji: "💄",
+    categoria: "Beleza"
+  },
+  {
+    nome: "Mochila",
+    preco: 89.90,
+    emoji: "🎒",
+    categoria: "Acessórios"
+  },
+  {
+    nome: "Organizador",
+    preco: 34.90,
+    emoji: "🧺",
+    categoria: "Casa"
+  },
+  {
+    nome: "Caixa de Som",
+    preco: 69.90,
+    emoji: "🔊",
+    categoria: "Eletrônicos"
+  },
+  {
+    nome: "Relógio",
+    preco: 74.90,
+    emoji: "⌚",
+    categoria: "Acessórios"
+  }
+];
+
+let carrinho = [];
+let categoriaAtual = "Todos";
+
+function dinheiro(valor) {
+  return valor.toLocaleString("pt-BR", {
+    style: "currency",
+    currency: "BRL"
+  });
+}
+
+function mostrarProdutos() {
+
+  const lista = document.getElementById("listaProdutos");
+
+  lista.innerHTML = "";
+
+  const busca = document
+    .getElementById("pesquisa")
+    .value.toLowerCase();
+
+  const filtrados = produtos.filter(produto => {
+
+    const combinaNome =
+      produto.nome.toLowerCase().includes(busca);
+
+    const combinaCategoria =
+      categoriaAtual === "Todos" ||
+      produto.categoria === categoriaAtual;
+
+    return combinaNome && combinaCategoria;
+  });
+
+  filtrados.forEach((produto, indice) => {
+
+    const card = document.createElement("div");
+
+    card.className = "produto";
+
+    const imagem = document.createElement("div");
+    imagem.className = "foto";
+    imagem.textContent = produto.emoji;
+
+    const nome = document.createElement("h3");
+    nome.textContent = produto.nome;
+
+    const preco = document.createElement("p");
+    preco.className = "preco";
+    preco.textContent = dinheiro(produto.preco);
+
+    const botao = document.createElement("button");
+    botao.textContent = "Adicionar ao carrinho";
+
+    botao.addEventListener("click", () => {
+      adicionarCarrinho(produto);
+    });
+
+    card.append(imagem, nome, preco, botao);
+
+    lista.appendChild(card);
+  });
+
+}
+
+function filtrar() {
+  mostrarProdutos();
+}
+
+function filtrarCategoria(categoria) {
+  categoriaAtual = categoria;
+  mostrarProdutos();
+
+  document.getElementById("produtos")
+    .scrollIntoView({ behavior: "smooth" });
+}
+
+function adicionarCarrinho(produto) {
+
+  carrinho.push(produto);
+
+  document.getElementById("quantidade")
+    .textContent = carrinho.length;
+
+  alert("Produto adicionado ao carrinho!");
+
+}
+
+function verCarrinho() {
+
+  if (carrinho.length === 0) {
+    alert("Seu carrinho está vazio!");
+    return;
+  }
+
+  let total = 0;
+
+  let mensagem = "SEU CARRINHO:\n\n";
+
+  carrinho.forEach(produto => {
+
+    mensagem += produto.nome +
+      " - " + dinheiro(produto.preco) + "\n";
+
+    total += produto.preco;
+
+  });
+
+  mensagem += "\nTOTAL: " + dinheiro(total);
+
+  alert(mensagem);
+
+}
+
+mostrarProdutos();
+
+</script>
+
+</body>
+</html>
